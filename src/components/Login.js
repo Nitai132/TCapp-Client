@@ -128,7 +128,7 @@ export default function Login() { //פונקצייה ראשית - התחברות
         <br />
         <Copyright />
         <h4 style={{textAlign: 'center'}}>
-         {<a href="https://wa.me/972585469668">Contact through WhatsApp <WhatsAppIcon></WhatsAppIcon>+972-585-469-668</a>}
+         {<a href="https://wa.me/12407431840">Contact through WhatsApp <WhatsAppIcon></WhatsAppIcon>+1-240-743-1840</a>}
           </h4>
           <img 
             src={'/Logo.jpg'}

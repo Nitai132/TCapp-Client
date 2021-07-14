@@ -6,67 +6,59 @@ import AdminEmailTable from './AdminEmailsTable';
 import AdminPositionsControl from './AdminPositionsControl';
 
 export default function AdminPanel() { //פונקציה ראשית של אדמין
-    const [view, setView] = useState(''); //סטייט שבודק מה האדמין רוצה לראות
+  const [view, setView] = useState(''); //סטייט שבודק מה האדמין רוצה לראות
 
+  const handleViewChange = (value) => { //פונקציה שבודקת במה האדמין רוצה לצפות (משתמשים, הודעות, פוזיציות)
+    setView(value); //עדכון הסטייט לפי מה שבחר האדמין
+  }
 
-    const HandleLogout = async (e) => { //פונקציה שמנתקת את האדמין מהמערכת
-        await axios.get('/auth/logout'); //API התנתקות
-        window.location.reload(); //טעינת הדף מחדש
-      }
-
-      const handleViewChange = (value) => { //פונקציה שבודקת במה האדמין רוצה לצפות (משתמשים, הודעות, פוזיציות)
-            setView(value); //עדכון הסטייט לפי מה שבחר האדמין
-      }
-
-    return (
+  return (
+    <div>
       <div>
-        <div>
-          <Button 
-          variant="contained" 
-          color="primary" 
+        <Button
+          variant="contained"
+          color="primary"
           style={{
-          fontSize: '15px', 
-          position: 'relative', 
-          bottom: '50px',
-          right: '40px'
-          }}
-          onClick={()=> handleViewChange('messages')} //משנה את הטבלה להודעות בלחיצה
-          >
-            View Messages
-          </Button>
-          <Button 
-          variant="contained" 
-          color="primary" 
-          style={{
-            fontSize: '15px', 
+            fontSize: '15px',
             position: 'relative',
-            bottom: '50px', 
+          }}
+          onClick={() => handleViewChange('messages')} //משנה את הטבלה להודעות בלחיצה
+        >
+          View Messages
+          </Button>
+        <Button
+          variant="contained"
+          color="primary"
+          style={{
+            fontSize: '15px',
+            position: 'relative',
             left: '40px'
           }}
-          onClick={()=> handleViewChange('users')} //משנה את הטבלה למשתמשים בלחיצה
-          >
-            View Users
+          onClick={() => handleViewChange('users')} //משנה את הטבלה למשתמשים בלחיצה
+        >
+          View Users
           </Button>
-          <Button 
-          variant="contained" 
-          color="primary" 
+        <Button
+          variant="contained"
+          color="primary"
           style={{
-          fontSize: '15px', 
-          bottom: '50px',
-          position: 'relative', 
-          left: '120px'
+            fontSize: '15px',
+            position: 'relative',
+            left: '80px'
           }}
-          onClick={()=> handleViewChange('positions')} //משנה את הטבלה לפוזיציות בלחיצה
-          >
-            View All Positions
+          onClick={() => handleViewChange('positions')} //משנה את הטבלה לפוזיציות בלחיצה
+        >
+          View All Positions
           </Button>
-        </div>
+      </div>
+      <div>
         {/* החלק הזה קורה רק במידה והאדמין רוצה לראות הודעות */}
         {view === 'messages' && <AdminEmailTable />}
         {/* החלק הזה קורה רק במידה והאדמין רוצה לראות את המשתמשים */}
-        {view === 'users' &&  <AdminUsersTable />}
+        {view === 'users' && <AdminUsersTable />}
         {view === 'positions' && <AdminPositionsControl />}
       </div>
-    )
+    </div>
+  )
 };
 

@@ -27,74 +27,74 @@ export default function StickyHeadTable(props) { //הפונקציה של הטב�
   const [rowsPerPage, setRowsPerPage] = React.useState(11); //כמות שורות פר עמוד
   const [positions, setPositions] = React.useState([]);
 
-  
-const columns = [  // עמודות לטבלה הראשית
-  {
-    id: 'Num',
-    label: 'Num',
-    minWidth: 50
-  },
-  { 
-      id: 'Symbol', 
-      label: 'Symbol', 
-      minWidth: 50,
-  },
-  {
-      id: 'Operation', 
-      label: 'Operation', 
+
+  const columns = [  // עמודות לטבלה הראשית
+    {
+      id: 'Num',
+      label: 'Num',
       minWidth: 50
-  },
-  {
+    },
+    {
+      id: 'Symbol',
+      label: 'Symbol',
+      minWidth: 50,
+    },
+    {
+      id: 'Operation',
+      label: 'Operation',
+      minWidth: 50
+    },
+    {
       id: 'StartDate',
       label: 'Start Date',
       minWidth: 50,
-  },
-  {
+    },
+    {
       id: 'EndDate',
       label: 'End Date',
       minWidth: 50,
-  },
-  {
+    },
+    {
       id: 'StartPrice',
       label: 'Start Price',
       minWidth: 50,
-  },
-  {
+    },
+    {
       id: 'EndPrice',
       label: 'End Price',
       minWidth: 50,
-  }, 
-  {
+    },
+    {
       id: 'succeeded',
       label: 'Succeeded',
       minWidth: 50,
-  },
-  { 
-    id: 'PipsesCents', 
-    label: 'Pipses/Cents', 
-    minWidth: 50,
-  },
-  { 
-      id: 'Precent', 
-      label: 'Success rate (per page)', 
+    },
+    {
+      id: 'PipsesCents',
+      label: 'Pipses/Cents',
       minWidth: 50,
-  },
-];
+    },
+    {
+      id: 'Precent',
+      label: 'Success rate (per page)',
+      minWidth: 50,
+    },
+  ];
 
-function createData( //פונקציה המייצרת דאטא חדש לטבלה
-  Num,
-  Symbol, 
-  Operation, 
-  StartDate, 
-  EndDate, 
-  StartPrice, 
-  EndPrice, 
-  succeeded, 
-  PipsesCents,
-  Precent
+  function createData( //פונקציה המייצרת דאטא חדש לטבלה
+    Num,
+    Symbol,
+    Operation,
+    StartDate,
+    EndDate,
+    StartPrice,
+    EndPrice,
+    succeeded,
+    PipsesCents,
+    Precent
   ) {
-return {Num, Symbol, Operation, StartDate, EndDate, StartPrice, EndPrice, succeeded, PipsesCents, Precent};
-}
+    return { Num, Symbol, Operation, StartDate, EndDate, StartPrice, EndPrice, succeeded, PipsesCents, Precent };
+  }
 
 
   const handleChangePage = (event, newPage) => { //פונקציה לשינוי עמוד
@@ -106,6 +106,7 @@ return {Num, Symbol, Operation, StartDate, EndDate, StartPrice, EndPrice, succee
     setPage(0);
   };
 
+  // פונקציה שמוסיפה אחוזי הצלחה בראש כל עמוד + משנה ערכים שהם אנדיפיינד
   const addSuccessRate = (arr) => {
     let arrays = [];
     const size = 10;
@@ -120,108 +121,128 @@ return {Num, Symbol, Operation, StartDate, EndDate, StartPrice, EndPrice, succee
       let succeeded = chunk.filter(item => item.succeeded === 'true').length;
       // מוצא את מספר הפוזיציות שעדיין לא נסגרו
       let unClosedPositions = 0;
-      chunk.map((item)=> {
-        if (item.succeeded === 'undefined') {
+      chunk.map((item) => {
+        if (item.succeeded === 'undefined') { //במידה וסוקסידד אנדיפיינד
           item.succeeded = 'Position is open'
-          unClosedPositions++;
+          unClosedPositions++; // לא סופר פוזיציות פתוחות בחישוב האחוזים
         };
-        if (item.EndDate === 'N/A') {
-          item.EndDate = 'Position is open'
-        }
-        if (!item.EndPrice) {
+        if (!item.EndPrice) { // במידה ואין מחיר סגירה
           item.EndPrice = 'Position is open'
         }
-        if (!item.PipsesCents) {
+        if (!item.PipsesCents) { // במידה ואין פיפסים
           item.PipsesCents = 'Position is open'
         }
       });
       // מוצא את אחוזי ההצלחה לפי החישוב הבא: מספר הפוזיציות שהצליחו לחלק לגודל הצ'אנק פחות מספר הפוזיציות שלא נסגרו
-      let rate = (succeeded/(chunk.length-unClosedPositions)) * 100;
-      rate = rate.toFixed()+'%';
+      let rate = (succeeded / (chunk.length - unClosedPositions)) * 100;
+      rate = rate.toFixed() + '%';
       if (rate === 'NaN%') {
         rate = '0%'
       };
       ratesArray.push(rate);
     });
-    arrays.map((array, idx) => array.unshift(createData('', '','','','','','','','',ratesArray[idx])));
+    arrays.map((array, idx) => array.unshift(createData('', '', '', '', '', '', '', '', '', ratesArray[idx]))); //הכנסה של עמודת אחוזים לטבלה
     return arrays.flat()
   }
 
-  useEffect(async () => {
-      const details = await axios.get('/auth/userDetails');
-      const userPositions = await axios.get(`/positions/getUserPositions/${details.data.email}`);
-      let finalPositions = [];
-      for (let i=0;i<userPositions.data[0].bonds.length;i++) {
-        const bond = await axios.get(`positions/getbond/${userPositions.data[0].bonds[i]}`);
-        finalPositions.push(bond.data[0]);
-      }
-      for (let i=0;i<userPositions.data[0].crypto.length;i++) {
-        const crypto = await axios.get(`positions/getCrypto/${userPositions.data[0].crypto[i]}`);
-        finalPositions.push(crypto.data[0]);
-      }
-      for (let i=0;i<userPositions.data[0].comodity.length;i++) {
-        const comodity = await axios.get(`positions/getComodity/${userPositions.data[0].comodity[i]}`);
-        finalPositions.push(comodity.data[0]);
-      }
-      for (let i=0;i<userPositions.data[0].pairs.length;i++) {
-        const currencyPair = await axios.get(`positions/getCurrencyPair/${userPositions.data[0].pairs[i]}`);
-        finalPositions.push(currencyPair.data[0]);
-      }
-      for (let i=0;i<userPositions.data[0].rest.length;i++) {
-        const rest = await axios.get(`positions/getRest/${userPositions.data[0].rest[i]}`);
-        finalPositions.push(rest.data[0]);
-      }
-      for (let i=0;i<userPositions.data[0].stocks.length;i++) {
-        const stock = await axios.get(`positions/getStock/${userPositions.data[0].stocks[i]}`);
-        finalPositions.push(stock.data[0]);
-      }
+  //פונקציה שמביאה את כל הפוזיציות והמידע של המשתמש
+  const getUserData = async () => {
+    const details = await axios.get('/auth/userDetails'); // API שמביא דאטא על המשתמש
+    const userPositions = await axios.get(`/positions/getUserPositions/${details.data.email}`); // API שמביא את הפוזיציות של המשתמש
+    let finalPositions = [];
+    for (let i = 0; i < userPositions.data[0].bonds.length; i++) {
+      const bond = await axios.get(`positions/getbond/${userPositions.data[0].bonds[i]}`); // כל הבונדים של המשתמש
+      finalPositions.push(bond.data[0]);
+    }
+    for (let i = 0; i < userPositions.data[0].crypto.length; i++) {
+      const crypto = await axios.get(`positions/getCrypto/${userPositions.data[0].crypto[i]}`); // כל הקריפטו של המשתמש
+      finalPositions.push(crypto.data[0]);
+    }
+    for (let i = 0; i < userPositions.data[0].comodity.length; i++) {
+      const comodity = await axios.get(`positions/getComodity/${userPositions.data[0].comodity[i]}`); // כל הקומודיטי של המשתמש
+      finalPositions.push(comodity.data[0]);
+    }
+    for (let i = 0; i < userPositions.data[0].pairs.length; i++) {
+      const currencyPair = await axios.get(`positions/getCurrencyPair/${userPositions.data[0].pairs[i]}`); // כל הקורנסי של המשתמש
+      finalPositions.push(currencyPair.data[0]);
+    }
+    for (let i = 0; i < userPositions.data[0].rest.length; i++) {
+      const rest = await axios.get(`positions/getRest/${userPositions.data[0].rest[i]}`); // כל הרסט של המשתמש
+      finalPositions.push(rest.data[0]);
+    }
+    for (let i = 0; i < userPositions.data[0].stocks.length; i++) {
+      const stock = await axios.get(`positions/getStock/${userPositions.data[0].stocks[i]}`); // כל הסטוקס של המשתמש
+      finalPositions.push(stock.data[0]);
+    }
 
-      const sortedPositions = finalPositions.sort((a, b) => {
-        return b.insertTime - a.insertTime;
-      });
-      let rows = [];
-      for (let i=0;i<sortedPositions.length;i++) {
-        rows.push(createData(
-          i+1,
-          sortedPositions[i].symbol, 
-          sortedPositions[i].operation, 
-          sortedPositions[i].startDate, 
-          sortedPositions[i].endDate, 
-          sortedPositions[i].startPrice,
-          sortedPositions[i].endPrice,
-          String(sortedPositions[i].succeeded), 
-          sortedPositions[i].pipsed,
-          sortedPositions[i].Precent
-          ))
+    const sortedPositions = finalPositions.sort((a, b) => { // מסדר את הפוזיציות 
+      return b.insertTime - a.insertTime;
+    });
+
+    let rows = [];
+    let openPositionsEndDates = []
+    for (let i = 0; i < sortedPositions.length; i++) { // לולאת פור על כל הפוזיציות של המשתמש
+      if (sortedPositions[i].pipsed !== undefined) { //במידה ויש לפוזיציה פיפסים
+        sortedPositions[i].pipsed = sortedPositions[i].pipsed.toFixed(5); // מסדר את הפיפסים רק ל3 מספרים אחרי הנקודה
       };
-      const finalArray = addSuccessRate(rows);
-      setPositions(finalArray);
-    }, [])
+      if (sortedPositions[i].succeeded === undefined) { //במידה והפוזיציה פתוחה
+        openPositionsEndDates.push(sortedPositions[i].endDate); // דוחף למערך את תאריך הסגירה של הפוזיציה
+      }
+      rows.push(createData( // מכין את כל הפוזיציות לטבלה
+        i + 1,
+        sortedPositions[i].symbol,
+        sortedPositions[i].operation,
+        sortedPositions[i].startDate,
+        sortedPositions[i].endDate,
+        sortedPositions[i].startPrice,
+        sortedPositions[i].endPrice,
+        String(sortedPositions[i].succeeded),
+        sortedPositions[i].pipsed,
+        sortedPositions[i].Precent
+      ))
+    };
+    props.passEndDates(openPositionsEndDates); // מעביר תאריכים של כל הפוזיציות הפתוחות לקומפוננטה הראשית
+    const finalArray = addSuccessRate(rows); // מוסיף אחוזי הצלחה לטבלה
+    setPositions(finalArray); // קריאה לפונקציה שמכניסה את הערכים לטבלה
+  }
+
+  //קיראה לפונקציה שמביאה את כל המידע על המשתמש כשהדף עולה
+  useEffect(() => {
+    getUserData();
+  }, [])
+
+  //קריאה לקומפוננטה הראשית שצריך לרנדר את הטבלה מחדש
+  useEffect(() => {
+    if (props.reRender === true) {
+      getUserData();
+    }
+  }, [props.reRender]);
+
   return (
-    <Paper className={classes.root} style={{paddingTop: '20px'}}>
+    <Paper className={classes.root} style={{ paddingTop: '20px' }}>
       <TableContainer className={classes.container}>
         <Table stickyHeader aria-label="sticky table">
           <TableHead>
-            <TableRow> 
+            <TableRow>
               {columns.map((column, idx) => ( //מאפינג לעמודות
-                <TableCell 
+                <TableCell
                   key={idx} //מזהה
                   align={column.align}
-                  style={{ minWidth: column.minWidth, textAlign: 'center', backgroundColor: 'lightBlue'}} //סטיילינג
+                  style={{ minWidth: column.minWidth, textAlign: 'center', backgroundColor: 'lightBlue' }} //סטיילינג
                 >
-                  {column.label} 
-                </TableCell> 
+                  {column.label}
+                </TableCell>
               ))}
             </TableRow>
           </TableHead>
           <TableBody>
             {positions.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row, idx) => { //מאפינג לדפים
               return (
-                <TableRow hover role="checkbox" tabIndex={-1} key={idx}> 
-                  {columns.map((column , idx) => { //  מאפינג שורות לתוך הטבלה
-                    const value = row[column.id]; 
+                <TableRow hover role="checkbox" tabIndex={-1} key={idx}>
+                  {columns.map((column, idx) => { //  מאפינג שורות לתוך הטבלה
+                    const value = row[column.id];
                     return (
-                      <TableCell key={idx} align={column.align} style={{textAlign: 'center', fontSize: '11px', height: '16.5px', borderBottom: '1px solid black'}}>
+                      <TableCell key={idx} align={column.align} style={{ textAlign: 'center', fontSize: '11px', height: '16.5px', borderBottom: '1px solid black' }}>
                         {column.format && typeof value === 'number' ? column.format(value) : value}
                       </TableCell>
                     );
@@ -241,13 +262,13 @@ return {Num, Symbol, Operation, StartDate, EndDate, StartPrice, EndPrice, succee
         onChangePage={handleChangePage}
         onChangeRowsPerPage={handleChangeRowsPerPage}
       />
-      <Button 
-      onClick={() => props.PdfArray(positions.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage))}
-      variant="contained" 
-      color="primary" 
-      style={
-        {fontSize: '14px', position: 'relative', left: '10px', bottom: '10px'}
-      }>
+      <Button
+        onClick={() => props.PdfArray(positions.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage))}
+        variant="contained"
+        color="primary"
+        style={
+          { fontSize: '14px', position: 'relative', left: '10px', bottom: '10px' }
+        }>
         Download Page as PDF
       </Button>
     </Paper>

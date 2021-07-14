@@ -55,19 +55,32 @@ export default function DialogSelect(props) { //פונקציה ראשית - מו
   };
 
   const closeModalAndStartTimer = (type, amount, stockValue) => { //פונקציה לסגור את המודל ולהפעיל את הטיימר
-      handleClose(); //סוגר את המודל
-      props.handleStartTimer(type, amount, stockValue); //מפעיל את הטיימר בפונקצייה הראשית
+    handleClose(); //סוגר את המודל
+    props.handleStartTimer(type, amount, stockValue); //מפעיל את הטיימר בפונקצייה הראשית
   };
 
   useEffect(() => {
+    let weekday = true;
+
+    let today = {
+      timeZone: 'America/New_York',
+      weekday: 'short',
+    },
+      formatter = new Intl.DateTimeFormat('en-US', today);
+
+    if (formatter.format(new Date()) === 'Sat' || formatter.format(new Date()) === 'Sun') {
+      weekday = false;
+    };
+    
     let options = {
       timeZone: 'Asia/Jerusalem',
       hour: 'numeric',
     },
-    formatter = new Intl.DateTimeFormat([], options);
-    if (formatter.format(new Date()) > 16 && formatter.format(new Date()) < 24) {
+      formatter2 = new Intl.DateTimeFormat([], options);
+
+    if (formatter2.format(new Date()) > 16 && formatter2.format(new Date()) < 21 && weekday) {
       setStocksFlag(true);
-    } 
+    }
   }, [])
 
   useEffect(() => {
@@ -75,26 +88,26 @@ export default function DialogSelect(props) { //פונקציה ראשית - מו
       timeZone: 'America/New_York',
       weekday: 'short',
     },
-    formatter = new Intl.DateTimeFormat('en-US', today);
-    if(formatter.format(new Date()) === 'Sun') {
+      formatter = new Intl.DateTimeFormat('en-US', today);
+    if (formatter.format(new Date()) === 'Sun') {
       let hour = {
         timeZone: 'America/New_York',
         hour: 'numeric',
       },
-      formatter = new Intl.DateTimeFormat([], hour);
+        formatter = new Intl.DateTimeFormat([], hour);
       if (formatter.format(new Date()) <= 17) {
         setForexFlag(false);
       }
     }
-    if(formatter.format(new Date()) === 'Sat') {
+    if (formatter.format(new Date()) === 'Sat') {
       setForexFlag(false);
     }
-    if(formatter.format(new Date()) === 'Fri') {
+    if (formatter.format(new Date()) === 'Fri') {
       let hour = {
         timeZone: 'America/New_York',
         hour: 'numeric',
       },
-      formatter = new Intl.DateTimeFormat([], hour);
+        formatter = new Intl.DateTimeFormat([], hour);
       if (formatter.format(new Date()) >= 16) {
         setForexFlag(false);
       };
@@ -104,15 +117,15 @@ export default function DialogSelect(props) { //פונקציה ראשית - מו
 
   return (
     <div>
-        <Button 
-        variant="contained" 
-        color="primary" 
-        style={{fontSize: '15px', width: '200px'}}
+      <Button
+        variant="contained"
+        color="primary"
+        style={{ fontSize: '15px', width: '200px' }}
         onClick={handleClickOpen} //פותח את המודל בלחיצה
-        >
-            get a new position
-            <NotificationsActiveIcon  />
-        </Button>
+      >
+        get a new position
+            <NotificationsActiveIcon />
+      </Button>
       <Dialog disableBackdropClick disableEscapeKeyDown open={open} onClose={handleClose}>
         <DialogTitle>choose the type and amount of positions you want to get</DialogTitle>
         <DialogContent>
@@ -122,7 +135,7 @@ export default function DialogSelect(props) { //פונקציה ראשית - מו
               <Select
                 native
                 value={type}
-                onChange={({target: {value}}) => handleTypeChange(value)} //קריאה לפונקציה שמשנה את סוג הפוזיציה
+                onChange={({ target: { value } }) => handleTypeChange(value)} //קריאה לפונקציה שמשנה את סוג הפוזיציה
                 input={<Input id="demo-dialog-native" />}
               >
                 <option value='crypto'>Crypto Currency</option>
@@ -130,7 +143,7 @@ export default function DialogSelect(props) { //פונקציה ראשית - מו
                 {forexFlag === true && <option value='pairs'>Currency pairs</option>}
                 {forexFlag === true && <option value='comodity'>Comodity</option>}
                 {forexFlag === true && <option value='bonds'>Bonds</option>}
-                <option value='rest'>Rest</option>
+                <option value='rest'>Indexes</option>
 
               </Select>
             </FormControl>
@@ -140,7 +153,7 @@ export default function DialogSelect(props) { //פונקציה ראשית - מו
                 labelId="demo-dialog-select-label"
                 id="demo-dialog-select"
                 value={amount}
-                onChange={({target: {value}}) => handleAmountChange(value)} //קריאה לפונקציה שמשנה את כמות הפוזיציות
+                onChange={({ target: { value } }) => handleAmountChange(value)} //קריאה לפונקציה שמשנה את כמות הפוזיציות
                 input={<Input />}
               >
                 <MenuItem value={1}>1</MenuItem>
@@ -156,7 +169,7 @@ export default function DialogSelect(props) { //פונקציה ראשית - מו
                 labelId="demo-dialog-select-label"
                 id="demo-dialog-select"
                 value={stockValue}
-                onChange={({target: {value}}) => handleStockValueChange(value)} //קריאה לפונקציה שמשנה את שווי המניה
+                onChange={({ target: { value } }) => handleStockValueChange(value)} //קריאה לפונקציה שמשנה את שווי המניה
                 input={<Input />}
               >
                 <MenuItem value={5}>5$-100$</MenuItem>
@@ -167,17 +180,17 @@ export default function DialogSelect(props) { //פונקציה ראשית - מו
             </FormControl>}
           </form>
           <h3>
-              the timer will start according to the current time and will stop when the minutes on the clock reach 01/16/31/46
+            the timer will start according to the current time and will stop when the minutes on the clock reach 01/16/31/46
               {<br />}
               (for example: 03:16, 07:46)
           </h3>
           <h4>
-            Regular trading hours for the U.S. stock market, including the New York Stock Exchange (NYSE) 
-            and the Nasdaq Stock Market (Nasdaq), are 9:30 a.m. to 4 p.m.
-            Eastern time on weekdays (except stock market holidays).
+            Regular trading hours for the U.S. stock market, including the New York Stock Exchange (NYSE)
+            and the Nasdaq Stock Market (Nasdaq), are 9:30 a.m. to 2 p.m.
+            Eastern time on weekdays (except stock market holidays, Saturday and Sunday).
           </h4>
           <h4>
-            The Forex market (Currency pairs,Comodity and Bonds)is open 24 
+            The Forex market (Currency pairs,Comodity and Bonds)is open 24
             hours a day in different parts of the world, from 5 p.m. EST on Sunday until 4 p.m. EST on Friday.
             (except Forex market holidays)
           </h4>
@@ -186,9 +199,9 @@ export default function DialogSelect(props) { //פונקציה ראשית - מו
           <Button onClick={handleClose} color="primary">
             Cancel
           </Button>
-          <Button 
-          onClick={() => closeModalAndStartTimer(type, amount, stockValue)} //קריאה לפונקציה שמפעילה את הטיימר
-          color="primary">
+          <Button
+            onClick={() => closeModalAndStartTimer(type, amount, stockValue)} //קריאה לפונקציה שמפעילה את הטיימר
+            color="primary">
             Start timer
           </Button>
         </DialogActions>
