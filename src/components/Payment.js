@@ -23,7 +23,7 @@ export default function Paypal() {
             intent: "CAPTURE",
             purchase_units: [
               {
-                description: "7 positions of any kinds", //תיאור של המוצר - 7 פוזיציות
+                description: "10 positions of any kinds", //תיאור של המוצר - 10 פוזיציות
                 amount: {
                   currency_code: "USD", //סוג מטבע לתשלום - דולר
                   value: 30.0, // מחיר - 30
@@ -36,7 +36,7 @@ export default function Paypal() {
         onApprove: async (data, actions) => { //ברגע שההעברה התקבלה
           const userDetails = await axios.get('/auth/userDetails'); //מוודא את המידע על המשתמש
           const checkCredits = await axios.get(`/auth/getUserById/${userDetails.data._id}`) //בודק כמה קרדיטים יש למשתמש 
-          const updatedCredits = checkCredits.data.credits + 7 // מוסיף למשתמש 7 קרדיטים
+          const updatedCredits = checkCredits.data.credits + 10 // מוסיף למשתמש 10 קרדיטים
           const addCredits = await axios.post('/auth/changeCredits', { //API שמשנה את הקרדיטים של המשתמש בדאטאבייס
             email: userDetails.data.email, //האימייל של המשתמש
             amount: updatedCredits //כמות הקרדיטים המעודכנת
@@ -55,7 +55,7 @@ export default function Paypal() {
             intent: "CAPTURE",
             purchase_units: [
               {
-                description: "15 positions of any kinds", //תיאור של המוצר - 15 פוזיציות
+                description: "25 positions of any kinds", //תיאור של המוצר - 15 פוזיציות
                 amount: {
                   currency_code: "USD", // מטבע - דולר
                   value: 69.0, // מחיר - 69
@@ -68,7 +68,7 @@ export default function Paypal() {
         onApprove: async (data, actions) => { //ברגע שההעברה התקבלה
           const userDetails = await axios.get('/auth/userDetails'); //מוודא את המידע על המשתמש
           const checkCredits = await axios.get(`/auth/getUserById/${userDetails.data._id}`); //בודק כמה קרדיטים יש למשתמש 
-          const updatedCredits = checkCredits.data.credits + 15 // מוסיף למשתמש 15 קרדיטים
+          const updatedCredits = checkCredits.data.credits + 25 // מוסיף למשתמש 15 קרדיטים
           const addCredits = await axios.post('/auth/changeCredits', { //API שמשנה את הקרדיטים של המשתמש בדאטאבייס
             email: userDetails.data.email, //האימייל של המשתמש
             amount: updatedCredits //כמות הקרדיטים המעודכנת
@@ -87,7 +87,7 @@ export default function Paypal() {
             intent: "CAPTURE",
             purchase_units: [
               {
-                description: "22 positions of any kinds", //תיאור של המוצר - 22 פוזיציות
+                description: "36 positions of any kinds", //תיאור של המוצר - 22 פוזיציות
                 amount: {
                   currency_code: "USD",  // מטבע - דולר
                   value: 99.0,// מחיר - 99
@@ -100,7 +100,7 @@ export default function Paypal() {
         onApprove: async (data, actions) => { //ברגע שההעברה התקבלה
           const userDetails = await axios.get('/auth/userDetails'); //מוודא את המידע על המשתמש
           const checkCredits = await axios.get(`/auth/getUserById/${userDetails.data._id}`); //בודק כמה קרדיטים יש למשתמש
-          const updatedCredits = checkCredits.data.credits + 22 // מוסיף למשתמש 22 קרדיטים
+          const updatedCredits = checkCredits.data.credits + 36 // מוסיף למשתמש 22 קרדיטים
           const addCredits = await axios.post('/auth/changeCredits', { //API שמשנה את הקרדיטים של המשתמש בדאטאבייס
             email: userDetails.data.email, //האימייל של המשתמש
             amount: updatedCredits //כמות הקרדיטים המעודכנת
@@ -124,9 +124,9 @@ export default function Paypal() {
             your credits will be updated as soon as your transection is complete.
         </h3>
       <div style={{ width: '450px', height: '400px', backgroundColor: 'lightblue', margin: 'auto' }}>
-        <h2 style={{ position: 'relative', top: '10px', marginLeft: '10px', float: 'left' }}>Basic offer: {<br />}30$ for{<br />} 7 positions</h2>
-        <h2 style={{ position: 'relative', bottom: '5px', marginRight: '200px', float: 'left' }}>Gold offer:{<br />} 69$ for {<br />}15 positions</h2>
-        <h2 style={{ position: 'relative', float: 'left', bottom: '20px' }}>Platinum offer:{<br />} 99$ for{<br />} 22 positions</h2>
+        <h2 style={{ position: 'relative', top: '10px', marginLeft: '10px', float: 'left' }}>Basic offer: {<br />}30$ for{<br />} 10 positions</h2>
+        <h2 style={{ position: 'relative', bottom: '5px', marginRight: '200px', float: 'left' }}>Gold offer:{<br />} 69$ for {<br />}25 positions</h2>
+        <h2 style={{ position: 'relative', float: 'left', bottom: '20px' }}>Platinum offer:{<br />} 99$ for{<br />} 36 positions</h2>
       </div>
       <div ref={paypal} style={{ width: '50px', margin: 'auto', position: 'relative', left: '30px', bottom: '370px' }}>
       </div>

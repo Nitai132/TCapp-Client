@@ -120,10 +120,10 @@ export default function DialogSelect(props) { //פונקציה ראשית - מו
       <Button
         variant="contained"
         color="primary"
-        style={{ fontSize: '15px', width: '200px' }}
+        style={{ fontSize: '15px', width: '200px', position: 'relative', bottom: '20px' }}
         onClick={handleClickOpen} //פותח את המודל בלחיצה
       >
-        get a new position
+        New Positions
             <NotificationsActiveIcon />
       </Button>
       <Dialog disableBackdropClick disableEscapeKeyDown open={open} onClose={handleClose}>

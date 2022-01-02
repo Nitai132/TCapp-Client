@@ -11,6 +11,10 @@ import TableHead from '@material-ui/core/TableHead';
 import TablePagination from '@material-ui/core/TablePagination';
 import TableRow from '@material-ui/core/TableRow';
 import Button from '@material-ui/core/Button';
+import FormControl from '@material-ui/core/FormControl';
+import NativeSelect from '@material-ui/core/NativeSelect';
+import InputLabel from '@material-ui/core/InputLabel';
+
 
 const useStyles = makeStyles({ //יצירת סטיילינג
   root: { //דיב רוט 
@@ -26,6 +30,37 @@ export default function StickyHeadTable(props) { //הפונקציה של הטב�
   const [page, setPage] = React.useState(0); //סטייט של הפאג'ינציה (עמודים)
   const [rowsPerPage, setRowsPerPage] = React.useState(11); //כמות שורות פר עמוד
   const [positions, setPositions] = React.useState([]);
+  const [openSymbols, setOpenSymbols] = React.useState('');
+  const [trackRecord, setTrackRecord] = React.useState('');
+
+  const handleAvailableSymbolsChange = ({target}) => {
+    setOpenSymbols(target.value);
+  };
+
+
+  const bondsSymbols = ()=> {
+    window.open("https://docs.google.com/spreadsheets/d/1VZOFoAPhfIigwNSD8j4SjM3VXvJI17uKasW-KH-hjvk/edit#gid=0", '_blank')
+  }
+
+  const pairsSymbols = ()=> {
+    window.open("https://docs.google.com/spreadsheets/d/13WBfVqtgm1lpx230yJyvFVxzgGzOwm96BRDtXTq_dMY/edit#gid=0", '_blank')
+  }
+
+  const cryptoSymbols = ()=> {
+    window.open("https://docs.google.com/spreadsheets/u/2/d/1AXKooJnZS8j5HoZVLdmls8jh1B9SN7Xyw7EVzClqRW4/edit#gid=0", '_blank')
+  }
+
+  const comoditySymbols = ()=> {
+    window.open("https://docs.google.com/spreadsheets/d/1qQSdmshVsYaP_fvwwDx27UlZBe_R57-R8ixmHtqceTU/edit#gid=0", '_blank')
+  }
+
+  const stocksSymbols = ()=> {
+    window.open("https://docs.google.com/spreadsheets/u/2/d/1DmFY6gaN8xzYpNCVg6nOE9xpm05zqKQ97vPzXuZ6Dj0/edit#gid=1238020137", '_blank')
+  }
+
+  const indexesSymbols = ()=> {
+    window.open("https://docs.google.com/spreadsheets/d/1pN6EFAZOOcmH_34fO1IzlSlEHX6lle3qB4xAYiBjFE8/edit#gid=0", '_blank')
+  }
 
 
   const columns = [  // עמודות לטבלה הראשית
@@ -205,6 +240,10 @@ export default function StickyHeadTable(props) { //הפונקציה של הטב�
     const finalArray = addSuccessRate(rows); // מוסיף אחוזי הצלחה לטבלה
     setPositions(finalArray); // קריאה לפונקציה שמכניסה את הערכים לטבלה
   }
+ //פונקציה בשביל ה TRACK RECORD לאיציק
+  const handleTrackRecordChange = ({target}) => {
+    setTrackRecord(target.value);
+  }
 
   //קיראה לפונקציה שמביאה את כל המידע על המשתמש כשהדף עולה
   useEffect(() => {
@@ -217,6 +256,28 @@ export default function StickyHeadTable(props) { //הפונקציה של הטב�
       getUserData();
     }
   }, [props.reRender]);
+
+  
+  useEffect(() => {
+    if (openSymbols === 'crypto') {
+      cryptoSymbols();
+    }
+    if (openSymbols === 'pairs') {
+      pairsSymbols();
+    }
+    if (openSymbols === 'bonds') {
+      bondsSymbols();
+    }
+    if (openSymbols === 'comodity') {
+      comoditySymbols();
+    }
+    if (openSymbols === 'indexes') {
+      indexesSymbols();
+    }
+    if (openSymbols === 'stocks') {
+      stocksSymbols();
+    }
+  }, [openSymbols])
 
   return (
     <Paper className={classes.root} style={{ paddingTop: '20px' }}>
@@ -262,14 +323,44 @@ export default function StickyHeadTable(props) { //הפונקציה של הטב�
         onChangePage={handleChangePage}
         onChangeRowsPerPage={handleChangeRowsPerPage}
       />
+      <FormControl style={{width: '180px', position: 'relative', bottom: '25px', float: 'right', right: '10px'}} >
+        <InputLabel style={{width: '180px', color: 'black'}} >Available Symbols</InputLabel>
+        <NativeSelect style={{width: '180px'}} 
+          value={openSymbols}
+          onChange={handleAvailableSymbolsChange}
+        >
+          <option aria-label="None" value=""/>
+          <option value={'crypto'}>Crypto Symbols</option>
+          <option value={'pairs'}>Currency Pairs Symbols</option>
+          <option value={'stocks'}>Stocks Symbols</option>
+          <option value={'bonds'}>Bonds Symbols</option>
+          <option value={'comodity'}>Comodity Symbols</option>
+          <option value={'indexes'}>Indexes Symbols</option>
+        </NativeSelect>
+      </FormControl>
+      <FormControl style={{width: '180px', position: 'relative', bottom: '25px', float: 'right', right: '50px'}} >
+        <InputLabel style={{width: '180px', color: 'black'}} >Track Records</InputLabel>
+        <NativeSelect style={{width: '180px'}} 
+          value={openSymbols}
+          onChange={handleTrackRecordChange}
+        >
+          <option aria-label="None" value=""/>
+          <option value={'crypto-symbols'}>Track-Record Crypto Symbols</option>
+          <option value={'pairs-symbols'}>Track-Record Currency Pairs Symbols</option>
+          <option value={'stocks-symbols'}>Track-Record Stocks Symbols</option>
+          <option value={'bonds-symbols'}>Track-Record Bonds Symbols</option>
+          <option value={'comodity-symbols'}>Track-Record Commodity Symbols</option>
+          <option value={'indexes-symbols'}>Track-Record Indexes Symbols</option>
+        </NativeSelect>
+      </FormControl>
       <Button
         onClick={() => props.PdfArray(positions.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage))}
         variant="contained"
         color="primary"
         style={
-          { fontSize: '14px', position: 'relative', left: '10px', bottom: '10px' }
+          { fontSize: '14px', position: 'relative', left: '5px', bottom: '10px' }
         }>
-        Download Page as PDF
+        Download Page(PDF)
       </Button>
     </Paper>
   );

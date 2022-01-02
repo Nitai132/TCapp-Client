@@ -189,7 +189,6 @@ export default function AdminUsersTable() {
 
   useEffect(async () => { //ברגע שהדף עולה בפעם הראשונה
     const resUsers = await axios.get('/auth/allUsers'); //API שולף את כל המשתמשים
-    console.log(resUsers)
     setUsers(resUsers.data); //מעדכן סטייט של משתמשים
     for (let i = 0; i < resUsers.data.length; i++) {
       setusersRows(usersRows => [...usersRows,  //דחיפה לתוך המשתנה

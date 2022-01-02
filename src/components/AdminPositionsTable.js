@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useLayoutEffect } from 'react';
 import axios from 'axios';
 import './PositionsTable.css';
 import { makeStyles } from '@material-ui/core/styles';
@@ -13,7 +13,7 @@ import TableRow from '@material-ui/core/TableRow';
 
 const useStyles = makeStyles({ //יצירת סטיילינג
   root: { //דיב רוט 
-    width: '100%',
+    width: '100%'
   },
   container: { // דיב חיצוני ביותר
     maxHeight: 800,
@@ -115,7 +115,6 @@ export default function AdminPositionsTable({ positionType }) { //הפונקצי
     }
     //לולאת פור איצ
     arrays.forEach(chunk => {
-      console.log(chunk)
       //מוצא את מספר הפוזיציות שהצליחו
       let succeeded = chunk.filter(item => item.succeeded == 'true').length;
       // מוצא את מספר הפוזיציות שעדיין לא נסגרו
@@ -135,18 +134,17 @@ export default function AdminPositionsTable({ positionType }) { //הפונקצי
       //לכל אובייקט במערך successRate מוסיף מפתח בשם
     });
     arrays.map((array, idx) => array.unshift(createData('', '', '', '', '', '', '', '', '', ratesArray[idx])));
-    console.log(arrays);
     return arrays.flat()
   }
 
-  useEffect(async () => {
-    const { data } = await axios.get(`/positions/getAll${positionType}`);
-    const enrichedRows = [];
+  const fetchPositionsData = async()=> {
+    let { data } = await axios.get(`/positions/getAll${positionType}`);
+    let enrichedRows = [];
     data.sort((a, b) => {
       return b.insertTime - a.insertTime;
     });
     data.map((object, idx) => {
-      if (object.pipsed !== undefined) {
+      if (object.pipsed) {
         object.pipsed = object.pipsed.toFixed(5);
       };
       enrichedRows.push(
@@ -164,9 +162,48 @@ export default function AdminPositionsTable({ positionType }) { //הפונקצי
         )
       )
     })
-    const finalRows = addSuccessRate(enrichedRows);
+    let finalRows = addSuccessRate(enrichedRows);
     setRows(finalRows);
-  }, [])
+    window.interval = setInterval( async() => {
+      data = await axios.get(`/positions/getAll${positionType}`);
+      enrichedRows = [];
+      data.data.sort((a, b) => {
+        return b.insertTime - a.insertTime;
+      });
+      data.data.map((object, idx) => {
+        if (object.pipsed) {
+          object.pipsed = object.pipsed.toFixed(5);
+        };
+        enrichedRows.push(
+          createData(
+            idx + 1,
+            object.symbol,
+            object.operation,
+            object.startDate,
+            object.endDate,
+            object.startPrice,
+            object.endPrice,
+            String(object.succeeded),
+            object.pipsed,
+            object.Precent
+          )
+        )
+      })
+      finalRows = addSuccessRate(enrichedRows);
+      setRows(finalRows);
+      console.log('data refreshed', finalRows)
+    }, 1000*60)
+  }
+
+  useEffect(() => {
+    fetchPositionsData();
+  }, []);
+
+  useLayoutEffect(() => {
+    return () => {
+        clearInterval(window.interval);
+    }
+}, [])
   return (
     <Paper className={classes.root}>
       <TableContainer className={classes.container}>

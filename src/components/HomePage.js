@@ -4,6 +4,9 @@ import { useHistory } from "react-router-dom";
 import './HomePage.css';
 import { Link } from "react-router-dom";
 import { makeStyles } from '@material-ui/core/styles';
+import FormControl from '@material-ui/core/FormControl';
+import NativeSelect from '@material-ui/core/NativeSelect';
+import InputLabel from '@material-ui/core/InputLabel';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
@@ -13,6 +16,10 @@ import NewPositionModal from '../components/NewPositionModal';
 import Grid from '@material-ui/core/Grid';
 import AdminPanel from '../components/AdminPanel';
 import ring from '../assets/ring.mp3';
+import socketIOClient from "socket.io-client";
+const ENDPOINT = "http://127.0.0.1:3007";
+const hacktimer = require("hacktimer");
+
 
 // פונקציה שמוצאת ברייק פוינטס רספונסיביים ומחלקת אותם לקטגוריות לפי גודל המסך
 function getBreakPoint(windowWidth) {
@@ -59,7 +66,10 @@ const HomePage = () => { //פונקציה דף ראשי
   const [newPositionsAmount, setNewPositionsAmount] = useState();
   const [newStocksRate, setNewStocksRate] = useState(5);
   const [reRenderTable, setReRenderTable] = useState(false);
+  const [openSymbols, setOpenSymbols] = useState('');
   const [relativeEndDate, setRelativeEndDate] = useState();
+  const [connect, setIsConnect] = useState("");
+
   const history = useHistory(); // ריאקט הוקס - ראוטר
   const isWindowClient = typeof window === "object";
   const [windowSize, setWindowSize] = useState(
@@ -67,6 +77,104 @@ const HomePage = () => { //פונקציה דף ראשי
       ? getBreakPoint(window.innerWidth) //👈
       : undefined
   );
+
+  useEffect(async () => {
+    const details = await axios.get('/auth/userDetails'); // API שמביא דאטא על המשתמש
+    const userPositions = await axios.get(`/positions/getUserPositions/${details.data.email}`);
+    const socket = socketIOClient(ENDPOINT);
+    socket.emit("connection");
+    socket.on("react", function (socket) {
+      switch (socket[0]) {
+        case "PositionClosed":
+          if (socket[1].updateDescription.updatedFields.succeeded === false) {
+            axios.post('/positions/falsePosition', {
+              id: socket[1].documentKey._id
+            })
+          }
+          if (socket[2] === 'stocks') {
+            const doesUserHaveStock = userPositions.data[0].socket[2].filter(stock => stock == socket[1].documentKey._id);
+            if (doesUserHaveStock.length > 0) {
+              if (socket[1].updateDescription.updatedFields.succeeded === false) {
+                setTimeout(() => {
+                  axios.get(`/auth/getUserById/${details.data._id}`).then((userCredits) => {
+                    setUserCredits(userCredits.data.credits);
+                  })
+                }, 1000)
+              }
+              handleReRenderTable();
+            }
+          }
+          if (socket[2] === 'bonds') {
+            const doesUserHaveBond = userPositions.data[0].bonds.filter(stock => stock == socket[1].documentKey._id);
+            if (doesUserHaveBond.length > 0) {
+              if (socket[1].updateDescription.updatedFields.succeeded === false) {
+                setTimeout(() => {
+                  axios.get(`/auth/getUserById/${details.data._id}`).then((userCredits) => {
+                    setUserCredits(userCredits.data.credits);
+                  })
+                }, 1000)
+              }
+              handleReRenderTable();
+            }
+          }
+          if (socket[2] === 'crypto') {
+            const doesUserHaveCrypto = userPositions.data[0].crypto.filter(stock => stock == socket[1].documentKey._id);
+            if (doesUserHaveCrypto.length > 0) {
+              if (socket[1].updateDescription.updatedFields.succeeded === false) {
+                setTimeout(() => {
+                  axios.get(`/auth/getUserById/${details.data._id}`).then((userCredits) => {
+                    setUserCredits(userCredits.data.credits);
+                  })
+                }, 1000)
+              }
+              handleReRenderTable();
+            }
+          }
+          if (socket[2] === 'pairs') {
+            const doesUserHavePairs = userPositions.data[0].pairs.filter(stock => stock == socket[1].documentKey._id);
+            if (doesUserHavePairs.length > 0) {
+              if (socket[1].updateDescription.updatedFields.succeeded === false) {
+                setTimeout(() => {
+                  axios.get(`/auth/getUserById/${details.data._id}`).then((userCredits) => {
+                    setUserCredits(userCredits.data.credits);
+                  })
+                }, 1000)
+              }
+              handleReRenderTable();
+            }
+          }
+          if (socket[2] === 'comodity') {
+            const doesUserHaveComodity = userPositions.data[0].comodity.filter(stock => stock == socket[1].documentKey._id);
+            if (doesUserHaveComodity.length > 0) {
+              if (socket[1].updateDescription.updatedFields.succeeded === false) {
+                setTimeout(() => {
+                  axios.get(`/auth/getUserById/${details.data._id}`).then((userCredits) => {
+                    setUserCredits(userCredits.data.credits);
+                  })
+                }, 1000)
+              }
+              handleReRenderTable();
+            }
+          }
+          if (socket[2] === 'rest') {
+            const doesUserHaveIndex = userPositions.data[0].rest.filter(stock => stock == socket[1].documentKey._id);
+            if (doesUserHaveIndex.length > 0) {
+              if (socket[1].updateDescription.updatedFields.succeeded === false) {
+                setTimeout(() => {
+                  axios.get(`/auth/getUserById/${details.data._id}`).then((userCredits) => {
+                    setUserCredits(userCredits.data.credits);
+                  })
+                }, 1000)
+              }
+              handleReRenderTable();
+            }
+          }
+        default:
+          break;
+      }
+    })
+  }, []);
+
 
   useEffect(() => {
     //הנדלר שנקרא ברגע שיש שינוי בגודל המסך
@@ -85,8 +193,6 @@ const HomePage = () => { //פונקציה דף ראשי
 
   let audio = new Audio(ring); //יצירת קובץ אודיו 
 
-  const paypal = useRef();
-
   const HandleLogout = async (e) => { //פונקציה שמנתקת את המשתמש
     await axios.get('/auth/logout'); // API שמנתק את המשתמש
     window.location.reload() //רענון של הדף
@@ -99,18 +205,27 @@ const HomePage = () => { //פונקציה דף ראשי
       axios.post('/auth/changeCredits', {
         email: userEmail,
         amount: userCredits + newPositionsAmount
-      }).then(() => {
-        alert('There were not enough positions available. Please refresh the page to get refunded and try again in a few minutes');
+      }).then(async () => {
+        alert('There were not enough positions available. You have been refunded for your credits, please try again in a few minutes.');
+        const details = await axios.get('/auth/userDetails'); // API שמביא דאטא על המשתמש
+        axios.get(`/auth/getUserById/${details.data._id}`).then((userCredits) => {
+          setUserCredits(userCredits.data.credits);
+        })
       })
     }
-    else { 
+    else {
       for (let i = 0; i < getNewCryptos.data.length; i++) {
         await axios.post('/positions/addNewPosition', {
           type: 'crypto',
           email: userEmail,
           id: getNewCryptos.data[i]._id
         });
-      }; 
+        const { data } = await axios.get(`/positions/getCrypto/${getNewCryptos.data[i]._id}`);
+        await axios.post('/emails/sendPositionMail', {
+          email: userEmail,
+          position: data[0]
+        });
+      };
     }
   };
 
@@ -125,15 +240,20 @@ const HomePage = () => { //פונקציה דף ראשי
         alert('There were not enough positions available. Please refresh the page to get refunded and try again in a few minutes');
       })
     }
-    else { 
+    else {
       for (let i = 0; i < getNewBonds.data.length; i++) {
         await axios.post('/positions/addNewPosition', {
           type: 'bonds',
           email: userEmail,
           id: getNewBonds.data[i]._id
         })
+        const { data } = await axios.get(`/positions/getBond/${getNewBonds.data[i]._id}`);
+        await axios.post('/emails/sendPositionMail', {
+          email: userEmail,
+          position: data[0]
+        });
       }
-    } 
+    }
   }
 
   // פונקציה שקוראת לאייפיאיי שמוסיף פוזיציות מסוג רסט למשתמש לפי הכמות שבחר
@@ -147,13 +267,18 @@ const HomePage = () => { //פונקציה דף ראשי
         alert('There were not enough positions available. Please refresh the page to get refunded and try again in a few minutes');
       })
     }
-    else { 
+    else {
       for (let i = 0; i < getNewRest.data.length; i++) {
         axios.post('/positions/addNewPosition', {
           type: 'rest',
           email: userEmail,
           id: getNewRest.data[i]._id
         })
+        const { data } = await axios.get(`/positions/getRest/${getNewRest.data[i]._id}`);
+        await axios.post('/emails/sendPositionMail', {
+          email: userEmail,
+          position: data[0]
+        });
       };
     }
   };
@@ -169,13 +294,18 @@ const HomePage = () => { //פונקציה דף ראשי
         alert('There were not enough positions available. Please refresh the page to get refunded and try again in a few minutes');
       })
     }
-    else { 
+    else {
       for (let i = 0; i < getNewComodity.data.length; i++) {
         await axios.post('/positions/addNewPosition', {
           type: 'comodity',
           email: userEmail,
           id: getNewComodity.data[i]._id
         })
+        const { data } = await axios.get(`/positions/getComodity/${getNewComodity.data[i]._id}`);
+        await axios.post('/emails/sendPositionMail', {
+          email: userEmail,
+          position: data[0]
+        });
       };
     }
   };
@@ -192,13 +322,18 @@ const HomePage = () => { //פונקציה דף ראשי
         alert('There were not enough positions available. Please refresh the page to get refunded and try again in a few minutes');
       })
     }
-    else { 
+    else {
       for (let i = 0; i < getNewPairs.data.length; i++) {
         await axios.post('/positions/addNewPosition', {
           type: 'pairs',
           email: userEmail,
           id: getNewPairs.data[i]._id
         })
+        const { data } = await axios.get(`/positions/getCurrencyPair/${getNewPairs.data[i]._id}`);
+        await axios.post('/emails/sendPositionMail', {
+          email: userEmail,
+          position: data[0]
+        });
       };
     }
   };
@@ -214,13 +349,19 @@ const HomePage = () => { //פונקציה דף ראשי
         alert('There were not enough positions available. Please refresh the page to get refunded and try again in a few minutes');
       })
     }
-    else { 
+    else {
       for (let i = 0; i < getNewStocks.data.length; i++) {
         await axios.post('/positions/addNewPosition', {
           type: 'stocks',
           email: userEmail,
           id: getNewStocks.data[i]._id
         })
+        const { data } = await axios.get(`/positions/getStock/${getNewStocks.data[i]._id}`);
+        //socket update
+        await axios.post('/emails/sendPositionMail', {
+          email: userEmail,
+          position: data[0]
+        });
       };
     }
   };
@@ -286,13 +427,12 @@ const HomePage = () => { //פונקציה דף ראשי
 
   const TimerHandler = async () => { //פונקציה הגורמת לטיימר לעבוד (הטיימר בודק כל הזמן את השעה הנוכחית ומוודא שהיא תואמת לטיימר) //במידה והטיימר לא על 00:00
     const Interval = setInterval(async () => { //יצירת אינטרבל שעובד כל שנייה
-      if (timerMinutes !== -1) { //אם הטיימר לא סיים לעבוד
+      if (timerMinutes >= 0) { //אם הטיימר לא סיים לעבוד
         const timeNowSeconds = 60 - new Date().toLocaleTimeString([], { second: '2-digit' }); //בדיקת הזמן הנוכחי בשניות
         setTimerSeconds(timeNowSeconds); //שינוי הטיימר בשניות ל60 פחות הזמן הנוכחי בשניות
         clearInterval(Interval); //ניקוי האינטרבל
       }
-      else if (timerMinutes === -1 && timerSeconds === '60') { //במידה והטיימר סיים לעבוד
-        clearInterval(Interval); //ניקוי אינטרבל
+      else if (timerMinutes < 0 && timerSeconds > 59) { //במידה והטיימר סיים לעבוד
         setTimerSeconds(0); // שינוי השניות ל00
         setTimerMinutes(0); // שינוי הדקות ל00
         window.localStorage.removeItem('timer');
@@ -302,6 +442,7 @@ const HomePage = () => { //פונקציה דף ראשי
         audio.play(); // מפעיל את הפעמול 
         if (newPositionsType === 'crypto') { // במידה ונבחר קריפטו
           await addNewCrypto();  // מוסיף קריפטו
+
         }
         if (newPositionsType === 'bonds') { // במידה ונבחר בונדס
           await addNewBonds(); // מוסיף בונדס
@@ -319,6 +460,7 @@ const HomePage = () => { //פונקציה דף ראשי
           await addNewStocks(); // מוסיף סטוקס
         }
         handleReRenderTable();
+        clearInterval(Interval); //ניקוי אינטרבל
       }
     }, 1000) //סוף האינטרבל
     if (timerSeconds == '1') { //במידה והשניות הגיעו ל1
@@ -380,13 +522,13 @@ const HomePage = () => { //פונקציה דף ראשי
           email: email,
           amount: amount
         })
-        .then(() => {
-          window.localStorage.setItem('timer', 0);
-          window.localStorage.setItem('email', '');
-          window.localStorage.setItem('type', '');
-          window.localStorage.setItem('amount', '');
-          alert('You have left the page while the timer was working. please refreh the application to get refunded.')
-        })
+          .then(() => {
+            window.localStorage.setItem('timer', 0);
+            window.localStorage.setItem('email', '');
+            window.localStorage.setItem('type', '');
+            window.localStorage.setItem('amount', '');
+            alert('You have left the page while the timer was working. please refreh the application to get refunded.')
+          })
       }
     }
   }, [userFirstName]);
@@ -396,7 +538,7 @@ const HomePage = () => { //פונקציה דף ראשי
     setTimerMinutes(0);
   };
 
- // פונקציה שמקבלת מהקומפוננטה של הטבלה תאריכים של פוזיציות פתוחות ומרנדרת מחדש את הטבלה כשתאריך סגירה מגיע
+  // פונקציה שמקבלת מהקומפוננטה של הטבלה תאריכים של פוזיציות פתוחות ומרנדרת מחדש את הטבלה כשתאריך סגירה מגיע
   const getEndDateData = (endDatesArray) => {
     //אופציות לטיימר שיפעל על שעון ישראל לפי תאריך
     let options = {
@@ -439,7 +581,7 @@ const HomePage = () => { //פונקציה דף ראשי
   };
 
   useEffect(() => {
-        //אופציות לטיימר שיפעל על שעון ישראל לפי שעה
+    //אופציות לטיימר שיפעל על שעון ישראל לפי שעה
     let hourOptions = {
       timeZone: 'Asia/Jerusalem',
       hour: '2-digit'
@@ -454,7 +596,7 @@ const HomePage = () => { //פונקציה דף ראשי
     },
       formatter3 = new Intl.DateTimeFormat([], minuteOptions);
     let minutes = formatter3.format(new Date());
-    
+
     if (relativeEndDate) { // אם יש תאריכים רלוונטים
       if (Number(relativeEndDate.slice(10, 13)) === Number(hour)) { //אם השעה של תאריך הסגירה שווה לשעה הנוכחית
         setTimeout(() => { // מפעיל טיימר
@@ -464,27 +606,53 @@ const HomePage = () => { //פונקציה דף ראשי
     }
   }, [relativeEndDate]);
 
-  const bondsSymbols = ()=> {
+  const handleAvailableSymbolsChange = ({ target }) => {
+    setOpenSymbols(target.value);
+  };
+
+  useEffect(() => {
+    if (openSymbols === 'crypto') {
+      cryptoSymbols();
+    }
+    if (openSymbols === 'pairs') {
+      pairsSymbols();
+    }
+    if (openSymbols === 'bonds') {
+      bondsSymbols();
+    }
+    if (openSymbols === 'comodity') {
+      comoditySymbols();
+    }
+    if (openSymbols === 'indexes') {
+      indexesSymbols();
+    }
+    if (openSymbols === 'stocks') {
+      stocksSymbols();
+    }
+  }, [openSymbols])
+
+
+  const bondsSymbols = () => {
     window.open("https://docs.google.com/spreadsheets/d/1VZOFoAPhfIigwNSD8j4SjM3VXvJI17uKasW-KH-hjvk/edit#gid=0", '_blank')
   }
 
-  const pairsSymbols = ()=> {
+  const pairsSymbols = () => {
     window.open("https://docs.google.com/spreadsheets/d/13WBfVqtgm1lpx230yJyvFVxzgGzOwm96BRDtXTq_dMY/edit#gid=0", '_blank')
   }
 
-  const cryptoSymbols = ()=> {
+  const cryptoSymbols = () => {
     window.open("https://docs.google.com/spreadsheets/u/2/d/1AXKooJnZS8j5HoZVLdmls8jh1B9SN7Xyw7EVzClqRW4/edit#gid=0", '_blank')
   }
 
-  const comoditySymbols = ()=> {
+  const comoditySymbols = () => {
     window.open("https://docs.google.com/spreadsheets/d/1qQSdmshVsYaP_fvwwDx27UlZBe_R57-R8ixmHtqceTU/edit#gid=0", '_blank')
   }
 
-  const stocksSymbols = ()=> {
+  const stocksSymbols = () => {
     window.open("https://docs.google.com/spreadsheets/u/2/d/1DmFY6gaN8xzYpNCVg6nOE9xpm05zqKQ97vPzXuZ6Dj0/edit#gid=1238020137", '_blank')
   }
 
-  const indexesSymbols = ()=> {
+  const indexesSymbols = () => {
     window.open("https://docs.google.com/spreadsheets/d/1pN6EFAZOOcmH_34fO1IzlSlEHX6lle3qB4xAYiBjFE8/edit#gid=0", '_blank')
   }
 
@@ -494,147 +662,200 @@ const HomePage = () => { //פונקציה דף ראשי
     <div className={classes.root}>
       <AppBar
         position="relative"
-        style={{ top: 0, height: '280px', margin: 'auto', paddingTop: '45px', backgroundColor: 'white', zIndex: '10' }}
+        style={{
+          top: 0, height: '170px', margin: 'auto', paddingTop: '45px', backgroundImage: 'url("main-img.jpg")', zIndex: '10',
+          backgroundRepeat: 'no-repeat', backgroundSize: 'cover'
+        }}
       >
         <Toolbar>
-          <Grid container alignItems="center" justify="center" spacing={2}>
-            {userFirstName === 'Guest' && <Grid item xs={5} sm={3}>
-              <Typography variant="h6" className={classes.title}>
+          <Grid container alignItems="center" justify="center" spacing={1}>
+            {userFirstName === 'Guest' && windowSize !== 'xs' && <Grid item xs={5} sm={3}>
+              <Typography variant="h6" className={classes.title} style={{ color: 'white', position: 'relative', bottom: '20px', left: '100px' }}>
                 Hello {userFirstName}
               </Typography>
             </Grid>}
-            {userFirstName !== 'Guest' && <Grid item xs={5} sm={1}>
-              <Typography variant="h6" className={classes.title}>
+            {userFirstName === 'Guest' && windowSize === 'xs' && <Grid item xs={5} sm={3}>
+              <Typography variant="h6" className={classes.title} style={{ color: 'white', position: 'relative', bottom: '20px' }}>
                 Hello {userFirstName}
               </Typography>
             </Grid>}
-            {userFirstName !== 'Guest' && userPremission !== 1 && <Grid item xs={5} sm={1}>
-              <Typography variant="h6" className={classes.title}>
+            {userFirstName !== 'Guest' && userPremission !== 1 && <Grid item xs={5} sm={1} style={{ position: 'relative', position: 'relative', bottom: '20px' }} >
+              <Typography variant="h6" className={classes.title} style={{ color: 'white' }}>
+                Hello {userFirstName}
+              </Typography>
+            </Grid>}
+            {userFirstName !== 'Guest' && userPremission !== 1 && windowSize !== 'xs' && <Grid item xs={5} sm={1} style={{ position: 'relative', right: '20px', position: 'relative', bottom: '20px' }}>
+              <Typography variant="h6" className={classes.title} style={{ color: 'white' }}>
                 {userCredits} Credits
-            </Typography>
+              </Typography>
+            </Grid>}
+            {userFirstName !== 'Guest' && userPremission !== 1 && windowSize === 'xs' && <Grid item xs={5} sm={1} style={{ position: 'relative', right: '20px', position: 'relative', bottom: '20px' }}>
+              <Typography variant="h6" className={classes.title} style={{ color: 'white', position: 'relative', left: '40px' }}>
+                {userCredits} Credits
+              </Typography>
             </Grid>}
             {userPremission !== 1 && timerMinutes == '00' && timerSeconds == '00' &&
               <Grid item xs={8} sm={2}>
                 <NewPositionModal handleStartTimer={(type, amount, stockValue) => TimerValidation(type, amount, stockValue)} />
               </Grid>}
             {userPremission !== 1 && timerSeconds != '00' && <Grid item xs={6} sm={2}>
-              <Button variant="contained" color="secondary"
+              <Button variant="contained" color="secondary" style={{ position: 'relative', bottom: '20px' }}
                 onClick={() => testTimer()}
               >
                 Stop timer (refund)
-            </Button>
+              </Button>
             </Grid>}
-            {userPremission !== 1 && userFirstName !== 'Guest' && <Grid item xs={5} sm={1}>
-              <Typography variant="h6" className={classes.title}>
+            {userPremission !== 1 && userFirstName !== 'Guest' && <Grid item xs={5} sm={2}>
+              <Typography variant="h5" className={classes.title} style={{ color: 'white', position: 'relative', bottom: '20px' }}>
                 Timer: {timerMinutes}:{timerSeconds}
               </Typography>
             </Grid>}
-            {userPremission !== 1 && userFirstName !== "Guest" && <Grid item xs={6} sm={2}>
+            {userPremission !== 1 && userFirstName !== "Guest" && windowSize !== 'xs' && <Grid item xs={6} sm={2}>
               <Button
                 variant="contained"
                 color="primary"
-                style={{marginLeft: '35px'}}
+                style={{ position: 'relative', bottom: '20px', right: '50px' }}
                 onClick={() => history.push('/payment')}
               >
                 Buy Credits
-            </Button>
+              </Button>
             </Grid>}
-            {userPremission !== 1 && userFirstName !== 'Guest' &&<Grid item xs={6} sm={2}>
-              <Link to="/contact" style={{ textDecoration: 'none', marginLeft: '30px'}}>
+            {userPremission !== 1 && userFirstName !== "Guest" && windowSize === 'xs' && <Grid item xs={6} sm={2}>
+              <Button
+                variant="contained"
+                color="primary"
+                style={{ position: 'relative', bottom: '20px', left: '20px', }}
+                onClick={() => history.push('/payment')}
+              >
+                Buy Credits
+              </Button>
+            </Grid>}
+            {userPremission !== 1 && userFirstName !== 'Guest' && windowSize !== 'xs' && <Grid item xs={6} sm={2}>
+              <Link to="/contact" style={{ textDecoration: 'none', position: 'relative', bottom: '20px', right: '100px' }}>
                 <Button
                   variant="contained"
                   color="primary"
                 >
                   Contact us
-              </Button>
-              </Link>
-            </Grid>}
-            {userPremission !== 1 && windowSize !== 'xs' && userFirstName === 'Guest' &&<Grid item xs={6} sm={3}>
-              <Link to="/contact" style={{ textDecoration: 'none', marginLeft: '80px'}}>
-                <Button
-                  variant="contained"
-                  color="primary"
-                >
-                  Contact us
-              </Button>
+                </Button>
               </Link>
             </Grid>}
 
-            {userPremission !== 1 && windowSize === 'xs' && userFirstName === 'Guest' &&<Grid item xs={6} sm={3}>
-              <Link to="/contact" style={{ textDecoration: 'none', marginLeft: '10px'}}>
+            {userPremission !== 1 && userFirstName !== 'Guest' && windowSize === 'xs' && <Grid item xs={6} sm={2}>
+              <Link to="/contact" style={{ textDecoration: 'none', position: 'relative', bottom: '20px' }}>
                 <Button
                   variant="contained"
                   color="primary"
                 >
                   Contact us
-              </Button>
+                </Button>
               </Link>
             </Grid>}
-            {userFirstName === 'Guest' && <Grid item xs={7} sm={1}>
-              <Link to="/login" style={{ textDecoration: 'none' }}>
-                <Button variant="contained" color="success">
+
+
+            {userPremission !== 1 && windowSize !== 'xs' && userFirstName === 'Guest' && <Grid item xs={6} sm={3}>
+              <Link to="/contact" style={{ textDecoration: 'none', position: 'relative', bottom: '20px' }}>
+                <Button
+                  variant="contained"
+                  color="primary"
+                >
+                  Contact us
+                </Button>
+              </Link>
+            </Grid>}
+            {userPremission !== 1 && userFirstName === 'Guest' && windowSize !== 'xs' && <Grid item sm={1}>
+              <FormControl style={{ width: '180px', position: 'relative', right: '200px', bottom: '25px' }} >
+                <InputLabel style={{ width: '180px', color: 'white' }} >Available Symbols</InputLabel>
+                <NativeSelect style={{ width: '180px' }}
+                  value={openSymbols}
+                  onChange={handleAvailableSymbolsChange}
+                >
+                  <option aria-label="None" value="" />
+                  <option value={'crypto'}>Crypto Symbols</option>
+                  <option value={'pairs'}>Currency Pairs Symbols</option>
+                  <option value={'stocks'}>Stocks Symbols</option>
+                  <option value={'bonds'}>Bonds Symbols</option>
+                  <option value={'comodity'}>Comodity Symbols</option>
+                  <option value={'indexes'}>Indexes Symbols</option>
+                </NativeSelect>
+              </FormControl>
+            </Grid>}
+
+
+            {userPremission !== 1 && windowSize === 'xs' && userFirstName === 'Guest' && <Grid item xs={6} sm={3}>
+              <Link to="/contact" style={{ textDecoration: 'none', marginLeft: '10px', position: 'relative', bottom: '20px' }}>
+                <Button
+                  variant="contained"
+                  color="primary"
+                >
+                  Contact us
+                </Button>
+              </Link>
+            </Grid>}
+            {userFirstName === 'Guest' && windowSize !== 'xs' && <Grid item xs={7} sm={1}>
+              <Link to="/login" style={{ textDecoration: 'none', position: 'relative', right: '80px' }}>
+                <Button variant="contained" color="success" style={{ position: 'relative', bottom: '20px' }}>
                   Sign in
-              </Button>
+                </Button>
+              </Link>
+            </Grid>}
+            {userFirstName === 'Guest' && windowSize === 'xs' && <Grid item xs={7} sm={1}>
+              <Link to="/login" style={{ textDecoration: 'none', position: 'relative', left: '40px' }}>
+                <Button variant="contained" color="success" style={{ position: 'relative', bottom: '20px' }}>
+                  Sign in
+                </Button>
               </Link>
             </Grid>}
             {userFirstName === 'Guest' && <Grid item xs={4} sm={1}>
-              <Link to="/register" style={{ textDecoration: 'none' }}>
+              <Link to="/register" style={{ textDecoration: 'none', position: 'relative', bottom: '20px', right: '50px' }}>
                 <Button variant="contained" color="secondary" >
                   Sign up
-              </Button>
+                </Button>
               </Link>
             </Grid>}
 
-            {userFirstName !== 'Guest' && <Grid item xs={5} sm={1}>
+            {userFirstName !== 'Guest' && windowSize !== 'xs' && <Grid item xs={5} sm={1}>
               <Button
                 variant="contained"
                 color="secondary"
-                style={{ fontSize: '15px', position: 'relative' }}
+                style={{ fontSize: '15px', position: 'relative', position: 'relative', bottom: '20px', right: '100px' }}
                 onClick={() => HandleLogout()} //מבצע התנתקות בלחיצה
               >
                 logout
-            </Button>
-            </Grid>}
-            {userPremission === 1 && <AdminPanel />}
-            {userPremission !== 1 && windowSize !== 'xs' && <Grid item xs={9} sm={1}>
-              <img
-                src={'/Logo.jpg'}
-                style={{ width: '180px', zIndex: '15', position: 'relative', bottom: '30px' }}
-              />
-            </Grid>}
-            {userPremission !== 1 && windowSize !== 'xs' && <Grid item sm={2}>
-              <Button 
-              variant="contained"   
-              onClick={() => cryptoSymbols()} 
-              style={{backgroundColor: 'green', color: 'white'}}>
-                Crypto symbols
               </Button>
             </Grid>}
-            {userPremission !== 1 && windowSize !== 'xs' && <Grid item sm={2}>
-              <Button variant="contained" style={{backgroundColor: 'green', color: 'white'}}
-              onClick={() => bondsSymbols()}
-              >Bonds symbols</Button>
+
+            {userFirstName !== 'Guest' && windowSize === 'xs' && <Grid item xs={5} sm={1}>
+              <Button
+                variant="contained"
+                color="secondary"
+                style={{ fontSize: '15px', position: 'relative', position: 'relative', bottom: '20px', }}
+                onClick={() => HandleLogout()} //מבצע התנתקות בלחיצה
+              >
+                logout
+              </Button>
             </Grid>}
-            {userPremission !== 1 && windowSize !== 'xs' && <Grid item sm={2}>
-              <Button variant="contained" style={{backgroundColor: 'green', color: 'white'}}
-              onClick={() => comoditySymbols()}
-              >Comodity symbols</Button>
+
+
+            {userPremission === 1 && <AdminPanel />}
+            {userPremission !== 1 && windowSize !== 'xs' && userFirstName !== 'Guest' && <Grid item xs={9} sm={1}>
+              <img
+                src={'/Logo.jpg'}
+                style={{
+                  width: '217px', zIndex: '15', position: 'relative', bottom: '20px', right: '45px'
+                }}
+              />
             </Grid>}
-            {userPremission !== 1 && windowSize !== 'xs' && <Grid item sm={2}>
-              <Button variant="contained" style={{backgroundColor: 'green', color: 'white'}}
-              onClick={() => stocksSymbols()}
-              >Stocks symbols</Button>
+
+            {userPremission !== 1 && windowSize !== 'xs' && userFirstName === 'Guest' && <Grid item xs={9} sm={1}>
+              <img
+                src={'/Logo.jpg'}
+                style={{
+                  width: '217px', zIndex: '15', position: 'relative', bottom: '20px', right: '45px'
+                }}
+              />
             </Grid>}
-            {userPremission !== 1 && windowSize !== 'xs' && <Grid item sm={2}>
-              <Button variant="contained" style={{backgroundColor: 'green', color: 'white'}}
-              onClick={() => pairsSymbols()}              
-              >Currency pair symbols</Button>
-            </Grid>}
-            {userPremission !== 1 && windowSize !== 'xs' && <Grid item sm={2}>
-              <Button variant="contained" style={{backgroundColor: 'green', color: 'white', marginLeft: '40px'}}
-              onClick={() => indexesSymbols()}              
-              >Indexes symbols</Button>
-            </Grid>}
+
           </Grid>
         </Toolbar>
       </AppBar>
@@ -647,9 +868,15 @@ const HomePage = () => { //פונקציה דף ראשי
       {userPremission !== 1 && windowSize === 'xs' && <Grid item xs={9} sm={1}>
         <img
           src={'/Logo.jpg'}
-          style={{ width: '250px', zIndex: '15', position: 'relative', bottom: '0', top: '20px', left: '25%' }}
+          style={{ width: '250px', zIndex: '15', position: 'relative', bottom: '0', top: '20px', left: '20%' }}
         />
       </Grid>}
+      {userFirstName === 'Guest' && <h1 style={{ textAlign: 'center' }}>
+        Welcome to Trading and Coffee!
+      </h1>}
+      {userFirstName === 'Guest' && <h2 style={{ textAlign: 'center' }}>
+        login to start using the application
+      </h2>}
     </div>
   );
 }
