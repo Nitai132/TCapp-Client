@@ -85,6 +85,68 @@ const HomePage = () => { //פונקציה דף ראשי
     socket.emit("connection");
     socket.on("react", function (socket) {
       switch (socket[0]) {
+        case "TPupdated":
+          if (socket[2] === 'bonds') {
+            const doesUserHaveBond = userPositions.data[0].bonds.filter(bond => bond == socket[1].documentKey._id);
+            if (doesUserHaveBond.length > 0) {
+              const symbol = axios.get(`/positions/getbond/${socket[1].documentKey._id}`).then((symbol) => {
+                alert(`your takeprofit has been updated to: ${socket[1].updateDescription.updatedFields.tp} on symbol: ${symbol.data[0].symbol}`)
+                handleReRenderTable();
+              });
+            }
+          }
+
+          if (socket[2] === 'stocks') {
+            const doesUserHavestock = userPositions.data[0].stocks.filter(stock => stock == socket[1].documentKey._id);
+            if (doesUserHavestock.length > 0) {
+              const symbol = axios.get(`/positions/getStock/${socket[1].documentKey._id}`).then((symbol) => {
+                alert(`your takeprofit has been updated to: ${socket[1].updateDescription.updatedFields.tp} on symbol: ${symbol.data[0].symbol}`)
+                handleReRenderTable();
+              });
+            }
+          }
+
+          if (socket[2] === 'comodity') {
+            const doesUserHavecomodity = userPositions.data[0].comodity.filter(comodity => comodity == socket[1].documentKey._id);
+            if (doesUserHavecomodity.length > 0) {
+              const symbol = axios.get(`/positions/getComodity/${socket[1].documentKey._id}`).then((symbol) => {
+                alert(`your takeprofit has been updated to: ${socket[1].updateDescription.updatedFields.tp} on symbol: ${symbol.data[0].symbol}`)
+                handleReRenderTable();
+              });
+            }
+          }
+
+          if (socket[2] === 'crypto') {
+            const doesUserHaveBond = userPositions.data[0].crypto.filter(crypto => crypto == socket[1].documentKey._id);
+            if (doesUserHaveBond.length > 0) {
+              const symbol = axios.get(`/positions/getcrypto/${socket[1].documentKey._id}`).then((symbol) => {
+                alert(`your takeprofit has been updated to: ${socket[1].updateDescription.updatedFields.tp} on symbol: ${symbol.data[0].symbol}`)
+                handleReRenderTable();
+              });
+            }
+          }
+
+          if (socket[2] === 'rest') {
+            const doesUserHaveIndex = userPositions.data[0].rest.filter(index => index == socket[1].documentKey._id);
+            if (doesUserHaveIndex.length > 0) {
+              const symbol = axios.get(`/positions/getbond/${socket[1].documentKey._id}`).then((symbol) => {
+                alert(`your takeprofit has been updated to: ${socket[1].updateDescription.updatedFields.tp} on symbol: ${symbol.data[0].symbol}`)
+                handleReRenderTable();
+              });
+            }
+          }
+
+          if (socket[2] === 'pairs') {
+            const doesUserHavePairs = userPositions.data[0].pairs.filter(pairs => pairs == socket[1].documentKey._id);
+            if (doesUserHavePairs.length > 0) {
+              const symbol = axios.get(`/positions/getPairs/${socket[1].documentKey._id}`).then((symbol) => {
+                alert(`your takeprofit has been updated to: ${socket[1].updateDescription.updatedFields.tp} on symbol: ${symbol.data[0].symbol}`)
+                handleReRenderTable();
+              });
+            }
+          }
+
+          break;
         case "PositionClosed":
           if (socket[1].updateDescription.updatedFields.succeeded === false) {
             axios.post('/positions/falsePosition', {
@@ -169,6 +231,7 @@ const HomePage = () => { //פונקציה דף ראשי
               handleReRenderTable();
             }
           }
+          break;
         default:
           break;
       }

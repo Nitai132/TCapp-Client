@@ -14,6 +14,9 @@ import Button from '@material-ui/core/Button';
 import FormControl from '@material-ui/core/FormControl';
 import NativeSelect from '@material-ui/core/NativeSelect';
 import InputLabel from '@material-ui/core/InputLabel';
+import alertify from 'alertifyjs';
+import 'alertifyjs/build/css/alertify.css';
+import 'alertifyjs/build/css/themes/default.css'
 
 
 const useStyles = makeStyles({ //יצירת סטיילינג
@@ -33,32 +36,32 @@ export default function StickyHeadTable(props) { //הפונקציה של הטב�
   const [openSymbols, setOpenSymbols] = React.useState('');
   const [trackRecord, setTrackRecord] = React.useState('');
 
-  const handleAvailableSymbolsChange = ({target}) => {
+  const handleAvailableSymbolsChange = ({ target }) => {
     setOpenSymbols(target.value);
   };
 
 
-  const bondsSymbols = ()=> {
+  const bondsSymbols = () => {
     window.open("https://docs.google.com/spreadsheets/d/1VZOFoAPhfIigwNSD8j4SjM3VXvJI17uKasW-KH-hjvk/edit#gid=0", '_blank')
   }
 
-  const pairsSymbols = ()=> {
+  const pairsSymbols = () => {
     window.open("https://docs.google.com/spreadsheets/d/13WBfVqtgm1lpx230yJyvFVxzgGzOwm96BRDtXTq_dMY/edit#gid=0", '_blank')
   }
 
-  const cryptoSymbols = ()=> {
+  const cryptoSymbols = () => {
     window.open("https://docs.google.com/spreadsheets/u/2/d/1AXKooJnZS8j5HoZVLdmls8jh1B9SN7Xyw7EVzClqRW4/edit#gid=0", '_blank')
   }
 
-  const comoditySymbols = ()=> {
+  const comoditySymbols = () => {
     window.open("https://docs.google.com/spreadsheets/d/1qQSdmshVsYaP_fvwwDx27UlZBe_R57-R8ixmHtqceTU/edit#gid=0", '_blank')
   }
 
-  const stocksSymbols = ()=> {
+  const stocksSymbols = () => {
     window.open("https://docs.google.com/spreadsheets/u/2/d/1DmFY6gaN8xzYpNCVg6nOE9xpm05zqKQ97vPzXuZ6Dj0/edit#gid=1238020137", '_blank')
   }
 
-  const indexesSymbols = ()=> {
+  const indexesSymbols = () => {
     window.open("https://docs.google.com/spreadsheets/d/1pN6EFAZOOcmH_34fO1IzlSlEHX6lle3qB4xAYiBjFE8/edit#gid=0", '_blank')
   }
 
@@ -100,6 +103,16 @@ export default function StickyHeadTable(props) { //הפונקציה של הטב�
       minWidth: 50,
     },
     {
+      id: 'tp',
+      label: 'TP',
+      minWidth: 50,
+    },
+    {
+      id: 'sp',
+      label: 'SP',
+      minWidth: 50,
+    },
+    {
       id: 'succeeded',
       label: 'Succeeded',
       minWidth: 50,
@@ -124,11 +137,13 @@ export default function StickyHeadTable(props) { //הפונקציה של הטב�
     EndDate,
     StartPrice,
     EndPrice,
+    tp,
+    sp,
     succeeded,
     PipsesCents,
     Precent
   ) {
-    return { Num, Symbol, Operation, StartDate, EndDate, StartPrice, EndPrice, succeeded, PipsesCents, Precent };
+    return { Num, Symbol, Operation, StartDate, EndDate, StartPrice, EndPrice, tp, sp, succeeded, PipsesCents, Precent };
   }
 
 
@@ -176,7 +191,7 @@ export default function StickyHeadTable(props) { //הפונקציה של הטב�
       };
       ratesArray.push(rate);
     });
-    arrays.map((array, idx) => array.unshift(createData('', '', '', '', '', '', '', '', '', ratesArray[idx]))); //הכנסה של עמודת אחוזים לטבלה
+    arrays.map((array, idx) => array.unshift(createData('', '', '', '', '', '', '', '', '', '', '', ratesArray[idx]))); //הכנסה של עמודת אחוזים לטבלה
     return arrays.flat()
   }
 
@@ -213,7 +228,6 @@ export default function StickyHeadTable(props) { //הפונקציה של הטב�
     const sortedPositions = finalPositions.sort((a, b) => { // מסדר את הפוזיציות 
       return b.insertTime - a.insertTime;
     });
-
     let rows = [];
     let openPositionsEndDates = []
     for (let i = 0; i < sortedPositions.length; i++) { // לולאת פור על כל הפוזיציות של המשתמש
@@ -231,6 +245,8 @@ export default function StickyHeadTable(props) { //הפונקציה של הטב�
         sortedPositions[i].endDate,
         sortedPositions[i].startPrice,
         sortedPositions[i].endPrice,
+        sortedPositions[i].tp,
+        sortedPositions[i].sp.currentStopPrice,
         String(sortedPositions[i].succeeded),
         sortedPositions[i].pipsed,
         sortedPositions[i].Precent
@@ -240,8 +256,11 @@ export default function StickyHeadTable(props) { //הפונקציה של הטב�
     const finalArray = addSuccessRate(rows); // מוסיף אחוזי הצלחה לטבלה
     setPositions(finalArray); // קריאה לפונקציה שמכניסה את הערכים לטבלה
   }
- //פונקציה בשביל ה TRACK RECORD לאיציק
-  const handleTrackRecordChange = ({target}) => {
+  //פונקציה בשביל ה TRACK RECORD לאיציק
+  const handleTrackRecordChange = ({ target }) => {
+    alertify.prompt( 'Set your starting capital', 'What was your capital when you first started using the system signals? ($)', '0'
+    , function(evt, value) { alertify.success('You entered: ' + value) }
+    , function() { alertify.error('Cancel') });
     setTrackRecord(target.value);
   }
 
@@ -257,7 +276,7 @@ export default function StickyHeadTable(props) { //הפונקציה של הטב�
     }
   }, [props.reRender]);
 
-  
+
   useEffect(() => {
     if (openSymbols === 'crypto') {
       cryptoSymbols();
@@ -323,13 +342,13 @@ export default function StickyHeadTable(props) { //הפונקציה של הטב�
         onChangePage={handleChangePage}
         onChangeRowsPerPage={handleChangeRowsPerPage}
       />
-      <FormControl style={{width: '180px', position: 'relative', bottom: '25px', float: 'right', right: '10px'}} >
-        <InputLabel style={{width: '180px', color: 'black'}} >Available Symbols</InputLabel>
-        <NativeSelect style={{width: '180px'}} 
+      <FormControl style={{ width: '180px', position: 'relative', bottom: '25px', float: 'right', right: '10px' }} >
+        <InputLabel style={{ width: '180px', color: 'black' }} >Available Symbols</InputLabel>
+        <NativeSelect style={{ width: '180px' }}
           value={openSymbols}
           onChange={handleAvailableSymbolsChange}
         >
-          <option aria-label="None" value=""/>
+          <option aria-label="None" value="" />
           <option value={'crypto'}>Crypto Symbols</option>
           <option value={'pairs'}>Currency Pairs Symbols</option>
           <option value={'stocks'}>Stocks Symbols</option>
@@ -338,14 +357,17 @@ export default function StickyHeadTable(props) { //הפונקציה של הטב�
           <option value={'indexes'}>Indexes Symbols</option>
         </NativeSelect>
       </FormControl>
-      <FormControl style={{width: '180px', position: 'relative', bottom: '25px', float: 'right', right: '50px'}} >
-        <InputLabel style={{width: '180px', color: 'black'}} >Track Records</InputLabel>
-        <NativeSelect style={{width: '180px'}} 
+      <FormControl style={{ width: '180px', position: 'relative', bottom: '25px', float: 'right', right: '50px' }} >
+        <InputLabel style={{ width: '180px', color: 'black' }} >Track Records</InputLabel>
+        <NativeSelect style={{ width: '180px' }}
           value={openSymbols}
           onChange={handleTrackRecordChange}
         >
-          <option aria-label="None" value=""/>
-          <option value={'crypto-symbols'}>Track-Record Crypto Symbols</option>
+          <option aria-label="None" value="" />
+          <option value={'crypto-symbols'} onClick={() => alert('hello')}
+          >
+            Track-Record Crypto Symbols
+          </option>
           <option value={'pairs-symbols'}>Track-Record Currency Pairs Symbols</option>
           <option value={'stocks-symbols'}>Track-Record Stocks Symbols</option>
           <option value={'bonds-symbols'}>Track-Record Bonds Symbols</option>
