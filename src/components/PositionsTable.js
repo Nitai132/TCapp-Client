@@ -231,11 +231,14 @@ export default function StickyHeadTable(props) { //הפונקציה של הטב�
     let rows = [];
     let openPositionsEndDates = []
     for (let i = 0; i < sortedPositions.length; i++) { // לולאת פור על כל הפוזיציות של המשתמש
-      if (sortedPositions[i].pipsed !== undefined) { //במידה ויש לפוזיציה פיפסים
-        sortedPositions[i].pipsed = sortedPositions[i].pipsed.toFixed(5); // מסדר את הפיפסים רק ל3 מספרים אחרי הנקודה
-      };
-      if (sortedPositions[i].succeeded === undefined) { //במידה והפוזיציה פתוחה
-        openPositionsEndDates.push(sortedPositions[i].endDate); // דוחף למערך את תאריך הסגירה של הפוזיציה
+      if (typeof sortedPositions[i].pipsed === 'number') { //במידה ויש לפוזיציה פיפסים
+        sortedPositions[i].pipsed = sortedPositions[i].pipsed.toFixed(3); // מסדר את הפיפסים רק ל3 מספרים אחרי הנקודה
+      } else {
+        sortedPositions[i].pipsed = "Position is open"
+      }
+      if (typeof sortedPositions[i].succeeded !== 'boolean') { //במידה והפוזיציה פתוחה
+        // openPositionsEndDates.push(sortedPositions[i].endDate); // דוחף למערך את תאריך הסגירה של הפוזיציה
+        sortedPositions[i].succeeded = "Position is open"
       }
       rows.push(createData( // מכין את כל הפוזיציות לטבלה
         i + 1,
@@ -245,8 +248,8 @@ export default function StickyHeadTable(props) { //הפונקציה של הטב�
         sortedPositions[i].endDate,
         sortedPositions[i].startPrice,
         sortedPositions[i].endPrice,
-        sortedPositions[i].tp,
-        sortedPositions[i].sp.currentStopPrice,
+        "test",// sortedPositions[i].tp,
+        "test",// sortedPositions[i].sp.currentStopPrice,
         String(sortedPositions[i].succeeded),
         sortedPositions[i].pipsed,
         sortedPositions[i].Precent
@@ -259,9 +262,15 @@ export default function StickyHeadTable(props) { //הפונקציה של הטב�
   //פונקציה בשביל ה TRACK RECORD לאיציק
   const handleTrackRecordChange = ({ target }) => {
     alertify.prompt( 'Set your starting capital', 'What was your capital when you first started using the system signals? ($)', '0'
-    , function(evt, value) { alertify.success('You entered: ' + value) }
+    , function(evt, value) {sendReport(target.value, value) }
     , function() { alertify.error('Cancel') });
     setTrackRecord(target.value);
+  }
+
+  const sendReport = async  (type, amount) => {
+    const details = await axios.get('/auth/userDetails') // API שמביא דאטא על המשתמש
+    alertify.success(`a report was sent to ${details.data.email}. the proccess might take a few minutes`);
+    await axios.get(`/reports/createReport/${type}/${amount}/${details.data.email}`)
   }
 
   //קיראה לפונקציה שמביאה את כל המידע על המשתמש כשהדף עולה
@@ -360,19 +369,17 @@ export default function StickyHeadTable(props) { //הפונקציה של הטב�
       <FormControl style={{ width: '180px', position: 'relative', bottom: '25px', float: 'right', right: '50px' }} >
         <InputLabel style={{ width: '180px', color: 'black' }} >Track Records</InputLabel>
         <NativeSelect style={{ width: '180px' }}
-          value={openSymbols}
+          value={trackRecord}
           onChange={handleTrackRecordChange}
         >
           <option aria-label="None" value="" />
-          <option value={'crypto-symbols'} onClick={() => alert('hello')}
-          >
-            Track-Record Crypto Symbols
-          </option>
-          <option value={'pairs-symbols'}>Track-Record Currency Pairs Symbols</option>
-          <option value={'stocks-symbols'}>Track-Record Stocks Symbols</option>
-          <option value={'bonds-symbols'}>Track-Record Bonds Symbols</option>
-          <option value={'comodity-symbols'}>Track-Record Commodity Symbols</option>
-          <option value={'indexes-symbols'}>Track-Record Indexes Symbols</option>
+          <option value={'Cryptos'}>Track-Record Crypto Symbols</option>
+          <option value={'Pairs'}>Track-Record Currency Pairs Symbols</option>
+          <option value={'Stocks'}>Track-Record Stocks Symbols</option>
+          <option value={'Bonds'}>Track-Record Bonds Symbols</option>
+          <option value={'Comodity'}>Track-Record Commodity Symbols</option>
+          <option value={'Rest'}>Track-Record Indexes Symbols</option>
+          <option value={'allPositions'}>Track-Record All Records</option>
         </NativeSelect>
       </FormControl>
       <Button

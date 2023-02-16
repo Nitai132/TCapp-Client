@@ -90,63 +90,63 @@ const HomePage = () => { //פונקציה דף ראשי
             const doesUserHaveBond = userPositions.data[0].bonds.filter(bond => bond == socket[1].documentKey._id);
             if (doesUserHaveBond.length > 0) {
               const symbol = axios.get(`/positions/getbond/${socket[1].documentKey._id}`).then((symbol) => {
-                alert(`your takeprofit has been updated to: ${socket[1].updateDescription.updatedFields.tp} on symbol: ${symbol.data[0].symbol}`)
+                alert(`your takeprofit has been updated to: ${socket[3]} on symbol: ${symbol.data[0].symbol}`)
                 handleReRenderTable();
               });
             }
           }
 
           if (socket[2] === 'stocks') {
-            const doesUserHavestock = userPositions.data[0].stocks.filter(stock => stock == socket[1].documentKey._id);
-            if (doesUserHavestock.length > 0) {
-              const symbol = axios.get(`/positions/getStock/${socket[1].documentKey._id}`).then((symbol) => {
-                alert(`your takeprofit has been updated to: ${socket[1].updateDescription.updatedFields.tp} on symbol: ${symbol.data[0].symbol}`)
+            const doesUserHaveBond = userPositions.data[0].stocks.filter(bond => bond == socket[1].documentKey._id);
+            if (doesUserHaveBond.length > 0) {
+              const symbol = axios.get(`/positions/getstock/${socket[1].documentKey._id}`).then((symbol) => {
+                alert(`your takeprofit has been updated to: ${socket[3]} on symbol: ${symbol.data[0].symbol}`)
                 handleReRenderTable();
               });
             }
           }
-
           if (socket[2] === 'comodity') {
-            const doesUserHavecomodity = userPositions.data[0].comodity.filter(comodity => comodity == socket[1].documentKey._id);
-            if (doesUserHavecomodity.length > 0) {
-              const symbol = axios.get(`/positions/getComodity/${socket[1].documentKey._id}`).then((symbol) => {
-                alert(`your takeprofit has been updated to: ${socket[1].updateDescription.updatedFields.tp} on symbol: ${symbol.data[0].symbol}`)
+            const doesUserHaveBond = userPositions.data[0].comodity.filter(bond => bond == socket[1].documentKey._id);
+            if (doesUserHaveBond.length > 0) {
+              const symbol = axios.get(`/positions/getcomodity/${socket[1].documentKey._id}`).then((symbol) => {
+                alert(`your takeprofit has been updated to: ${socket[3]} on symbol: ${symbol.data[0].symbol}`)
                 handleReRenderTable();
               });
             }
           }
 
           if (socket[2] === 'crypto') {
-            const doesUserHaveBond = userPositions.data[0].crypto.filter(crypto => crypto == socket[1].documentKey._id);
+            const doesUserHaveBond = userPositions.data[0].crypto.filter(bond => bond == socket[1].documentKey._id);
             if (doesUserHaveBond.length > 0) {
               const symbol = axios.get(`/positions/getcrypto/${socket[1].documentKey._id}`).then((symbol) => {
-                alert(`your takeprofit has been updated to: ${socket[1].updateDescription.updatedFields.tp} on symbol: ${symbol.data[0].symbol}`)
+                alert(`your takeprofit has been updated to: ${socket[3]} on symbol: ${symbol.data[0].symbol}`)
                 handleReRenderTable();
               });
             }
           }
 
           if (socket[2] === 'rest') {
-            const doesUserHaveIndex = userPositions.data[0].rest.filter(index => index == socket[1].documentKey._id);
-            if (doesUserHaveIndex.length > 0) {
-              const symbol = axios.get(`/positions/getbond/${socket[1].documentKey._id}`).then((symbol) => {
-                alert(`your takeprofit has been updated to: ${socket[1].updateDescription.updatedFields.tp} on symbol: ${symbol.data[0].symbol}`)
+            const doesUserHaveBond = userPositions.data[0].rest.filter(bond => bond == socket[1].documentKey._id);
+            if (doesUserHaveBond.length > 0) {
+              const symbol = axios.get(`/positions/getrest/${socket[1].documentKey._id}`).then((symbol) => {
+                alert(`your takeprofit has been updated to: ${socket[3]} on symbol: ${symbol.data[0].symbol}`)
                 handleReRenderTable();
               });
             }
           }
 
           if (socket[2] === 'pairs') {
-            const doesUserHavePairs = userPositions.data[0].pairs.filter(pairs => pairs == socket[1].documentKey._id);
-            if (doesUserHavePairs.length > 0) {
-              const symbol = axios.get(`/positions/getPairs/${socket[1].documentKey._id}`).then((symbol) => {
-                alert(`your takeprofit has been updated to: ${socket[1].updateDescription.updatedFields.tp} on symbol: ${symbol.data[0].symbol}`)
+            const doesUserHaveBond = userPositions.data[0].pairs.filter(bond => bond == socket[1].documentKey._id);
+            if (doesUserHaveBond.length > 0) {
+              const symbol = axios.get(`/positions/getpairs/${socket[1].documentKey._id}`).then((symbol) => {
+                alert(`your takeprofit has been updated to: ${socket[3]} on symbol: ${symbol.data[0].symbol}`)
                 handleReRenderTable();
               });
             }
           }
 
           break;
+
         case "PositionClosed":
           if (socket[1].updateDescription.updatedFields.succeeded === false) {
             axios.post('/positions/falsePosition', {
@@ -496,6 +496,7 @@ const HomePage = () => { //פונקציה דף ראשי
         clearInterval(Interval); //ניקוי האינטרבל
       }
       else if (timerMinutes < 0 && timerSeconds > 59) { //במידה והטיימר סיים לעבוד
+        clearInterval(Interval); //ניקוי אינטרבל
         setTimerSeconds(0); // שינוי השניות ל00
         setTimerMinutes(0); // שינוי הדקות ל00
         window.localStorage.removeItem('timer');
@@ -523,7 +524,6 @@ const HomePage = () => { //פונקציה דף ראשי
           await addNewStocks(); // מוסיף סטוקס
         }
         handleReRenderTable();
-        clearInterval(Interval); //ניקוי אינטרבל
       }
     }, 1000) //סוף האינטרבל
     if (timerSeconds == '1') { //במידה והשניות הגיעו ל1
@@ -763,7 +763,7 @@ const HomePage = () => { //פונקציה דף ראשי
               </Grid>}
             {userPremission !== 1 && timerSeconds != '00' && <Grid item xs={6} sm={2}>
               <Button variant="contained" color="secondary" style={{ position: 'relative', bottom: '20px' }}
-                onClick={() => testTimer()}
+                onClick={() => stopTimer()}
               >
                 Stop timer (refund)
               </Button>
